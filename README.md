@@ -2,12 +2,10 @@
 
 An end-to-end data pipeline solution to securely and automatically ingest data from external sources (SharePoint Online, Azure Blob Storage) into a central application. This project features a robust integration of Microsoft Azure services, emphasizing a security-first approach using Microsoft Entra ID for multi-tenant access and Azure DevOps for CI/CD orchestration.
 
-<br>
 
 # Business Case
 Our application, requires regular data feeds from various external sources, including automated exports from SAP that are deposited into a SharePoint site. The key challenge is to create a single, automated pipeline that can securely access data from multiple, isolated tenant environments without hardcoding credentials or granting overly broad permissions. The solution must be auditable, reliable, and scalable to onboard new data sources with minimal friction.
 
-<br>
 
 # Technical Requirements
 
@@ -19,7 +17,6 @@ Our application, requires regular data feeds from various external sources, incl
 | The pipeline shall be orchestrated and monitored through a centralized CI/CD platform (Azure DevOps). | The system shall be easily extensible to add new SharePoint sites or Blob Storage containers without major re-architecture. |
 | The pipeline shall log its execution status, including successful downloads and any errors encountered during the process. | The setup process for a new tenant shall be well-documented to allow for repeatable and consistent onboarding. |
 
-<br>
 
 # Tools Used
 Cloud Infrastructure - [Microsoft Azure](https://azure.microsoft.com/) ![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)
@@ -34,7 +31,6 @@ Bulk Storage - [Azure Blob Storage](https://azure.microsoft.com/en-us/services/s
 
 Scripting - [Python](https://www.python.org/) ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) & [PowerShell](https://learn.microsoft.com/en-us/powershell/) ![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
 
-<br>
 
 # High-Level Architecture
 The solution is comprised of two distinct but complementary data ingestion workflows, both orchestrated by a central Azure DevOps pipeline.
@@ -49,7 +45,6 @@ The solution is comprised of two distinct but complementary data ingestion workf
 *   **PowerShell** (specifically the PnP module) is used for the one-time setup of SharePoint permissions, as it provides the necessary cmdlets to grant site-level access to an Entra ID application, which is a critical security feature.
 *   **Azure VM with a Self-Hosted Agent** provides a stable, controlled environment to execute the scripts, manage file storage, and ensure consistent network access to the required resources.
 
-<br>
 
 # The Source Datasets
 The pipeline is designed to ingest data from two primary sources:
@@ -57,7 +52,6 @@ The pipeline is designed to ingest data from two primary sources:
 1.  **SharePoint Online:** CSV or XLSX files automatically exported from a source system like SAP and deposited into a specific document library folder (e.g., `/sites/ClientSite/Shared Documents/SAP_Exports`).
 2.  **Azure Blob Storage:** A single, consolidated CSV file stored in an Azure Blob container, accessible via a URL and a secure SAS token.
 
-<br>
 
 # Authentication & Security Model
 
@@ -73,7 +67,6 @@ Instead of a traditional database schema, this project's core complexity lies in
     2.  This token grants temporary, read-only access and has a defined expiry date.
     3.  The SAS token is stored as a **secret variable** in Azure DevOps and passed to the script at runtime, avoiding any exposure in the source code.
 
-<br>
 
 # Azure Configuration & Pipeline Setup
 
@@ -112,7 +105,6 @@ The pipeline orchestrates the entire process.
     *   In the pipeline settings in Azure DevOps, create a variable group or add secret variables directly.
     *   Store the `REVARS_SAS_TOKEN` and the `SP_CERT_PASSWORD` here. Check the "Keep this value secret" box.
 
-<br>
 
 # Pipeline Execution & Scripts
 The Azure DevOps pipeline runs the core logic contained in the Python scripts.
@@ -132,7 +124,6 @@ The pipeline can be adapted to trigger the `sharepoint_downloader.py` script.
 *   **Extraction:** Using the access token, the script makes authenticated calls to the Graph API to list the files in the designated SharePoint folder and then downloads each file.
 *   **Loading:** The files are saved to a local directory on the agent machine for downstream processing.
 
-<br>
 
 # Scheduling Pipeline Runs
 The pipeline can be configured to run automatically on a schedule.
