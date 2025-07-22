@@ -1,0 +1,39 @@
+trigger:
+  enabled: false
+variables:
+- name: BASE_URL
+  value: "https://link.blob.core.windows.net/folder"
+- name: BLOB_NAME
+  value: "filename.csv"
+stages:
+- stage: __default
+  jobs:
+  - job: Job
+    pool:
+      name: Default
+    steps:
+    - task: 5dwr4f64-171h-496d-b5hh-fd2ae2ad7p02@1
+      inputs:
+        repository: self
+    - task: CmdLine@2
+      displayName: 'Set up Python and install dependencies'
+      inputs:
+        script: |
+          python --version
+          python -m pip install --upgrade pip
+          pip install requests
+    - task: CmdLine@2
+      displayName: 'Download CSVs'
+      env:
+        REVARS_BASE_URL: $(BASE_URL)
+        REVARS_BLOB_NAME: $(BLOB_NAME)
+        REVARS_SAS_TOKEN: $(SAS_TOKEN)
+      inputs:
+        script: |
+          python scripts/download_csvs.py
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish downloaded CSVs'
+      inputs:
+        targetPath: 'C:\VM_Folder'
+        artifact: 'CSVs'
+
