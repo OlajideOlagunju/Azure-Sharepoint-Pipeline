@@ -100,20 +100,20 @@ This one-time setup grants the pipeline secure, site-specific access.
 The pipeline orchestrates the entire process.
 
 1.  **Create a Self-Hosted Agent Pool:** Set up a VM in Azure and install the Azure DevOps self-hosted agent on it. This agent will run the scripts.
-2.  **Create the Pipeline from YAML:** Use the provided `azure-pipelines.yml` file. This file defines the steps to install dependencies and run the Python scripts.
+2.  **Create the Pipeline from YAML:** Use the provided `SharePoint_Blob_File_Download_Pipeline.yml` YAML file. This file defines the steps to install dependencies and run the Python scripts.
 3.  **Configure Secret Variables:**
     *   In the pipeline settings in Azure DevOps, create a variable group or add secret variables directly.
-    *   Store the `REVARS_SAS_TOKEN` and the `SP_CERT_PASSWORD` here. Check the "Keep this value secret" box.
+    *   Store the `SAS_TOKEN` and the `SP_CERT_PASSWORD` here. Check the "Keep this value secret" box.
 
 
 # Pipeline Execution & Scripts
 The Azure DevOps pipeline runs the core logic contained in the Python scripts.
 
 ### Azure Blob Storage Workflow
-The pipeline triggers the `download_and_rotate.py` script.
+The pipeline triggers the `blob_download_and_rotate_files.py` script.
 
 *   **Extraction:** The script receives the Blob URL, name, and SAS token as environment variables. It makes a `requests.get()` call to the blob URL to download the file content.
-*   **Loading:** The file is saved to a local directory on the agent machine (e.g., `C:\SAP_Imports`).
+*   **Loading:** The file is saved to a local directory on the agent machine (e.g., `C:\VM_Folder`).
 *   **File Rotation (Transformation):** The script then scans the directory, counts the number of existing files, and deletes the oldest ones if the count exceeds a defined maximum (`MAX_FILES`), preventing disk space from filling up.
 
 ### SharePoint Workflow
