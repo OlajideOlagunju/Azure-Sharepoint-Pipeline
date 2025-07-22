@@ -83,13 +83,50 @@ This one-time setup grants the pipeline secure, site-specific access.
     *   Grant admin consent for the permissions.
 
 3.  **Create and Upload a Certificate:**
+    Microsoft Entra ID supports two types of authentication for service principals: password-based authentication (app secret) and certificate-based authentication. While app secrets can easily be created in the Azure portal or using a Microsoft API like Microsoft Graph, they're long-lived, and not as secure as certificates. It's therefore recommended that applications use certificates rather than secrets. To create a certificate, first make sure to install the latest PowerShell version from Microsoft. Run PowerShell as an Admin User on your local machine, then run the code below in PowerShell to create a Public Certificate and Private Key that will be stored on your local machine. Note the Password you have set for the Certificate. 
     *   Use PowerShell to generate a `.cer` (public key) and `.pfx` (private key) file.
+      $certname = "SharePoint_Cert" ## Choose a Certificate Name 
+      $cert = New-SelfSignedCertificate -Subject "CN=$certname" -CertStoreLocation 
+      "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -KeySpec Signature -KeyLength 2048 -KeyAlgorithm RSA -HashAlgorithm SHA256
+
+      Export-Certificate -Cert $cert -FilePath "C:\$certname.cer" ## Specify your preferred location to export certificate to
+      $mypwd = ConvertTo-SecureString -String "DummyPassword" -Force -AsPlainText ## Replace 'DummyPassword' with a secure Certificate Password of your choice
+
+      Export-PfxCertificate -Cert $cert -FilePath "C:\$certname.pfx" -Password $mypwd  ## Specify your preferred location        
+      
     *   Upload the `.cer` file to the **Certificates & secrets** section of your Entra app.
     *   Securely store the `.pfx` file and its password, as they will be needed by the Python script.
 
-4.  **Grant Site-Level Permissions:**
-    *   Using the `PnP.PowerShell` module, connect to your SharePoint site and run the `Grant-PnPAzureADAppSitePermission` cmdlet to give your app `Read` access to that specific site only.
+5.  **Grant Site-Level Permissions:**
+    *   Using the `PnP.PowerShell` module, connect to your SharePoint site and run the `Grant-PnPAzureADAppSitePermission` cmdlet to give your app `Read` access to that specific site only. First install the SharePoint and PnP.PowerShell modules in PowerShell using the code below:
+  
+      Install-Module SharePointPnPPowerShellOnline
+      Install-Module -Name PnP.PowerShell -Scope CurrentUser -AllowClobber -Force 
 
+    *   Run the code to register a new App. Make sure to change the tenant to your SharePoint Tenant. This also runs in interactive mode, so you‘ll need to sign in as seen in the next step. Afterwards, we’ll use the temporary app (which by default has ‘FullControl’ rights to all SharePoint Sites) to connect to the specified SharePoint site using the ClientID we just created. You’ll be required to sign in like the previous step; once signed in, you will be connected to the SharePoint site. `
+
+      Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP_PowerShell" -Tenant workplace.onmicrosoft.com -Interactive ## Replace 'workplace' with relevant tenant and 'PnP_PowerShell' with preferred name for Temporary App.
+
+      Connect-PnPOnline -Url "https://workplace.sharepoint.com/sites/TargetSite" -Interactive -ClientId cd33e75f-dummy-client-id-80fwe4b41a4f ## Replace ClientID value with ClientID from the previous step. 
+
+      Grant-PnPAzureADAppSitePermission -AppId "another-dummy-client-id-80fwe4b41a4e" DisplayName "SharePoint_Permissions" -Permissions Read -Site "https://workplace.sharepoint.com/sites/TargetSite"
+
+    $siteUrl = "https://workplace.sharepoint.com/sites/TargetSite"
+    $clientId = "another-dummy-client-id-80fwe4b41a4e" ## Replace ClientID value with 'Application (client) ID' of SharePoint App 
+    $tenant = "workplace.onmicrosoft.com"
+    Connect-PnPOnline -Url $siteUrl -ClientId $clientId -Tenant $tenant -CertificatePath "C:\SharePoint_Cert.pfx" -CertificatePassword (ConvertTo-SecureString "DummyPassword" -AsPlainText -Force) ## Replace CertificatePath value with path to the certificate (.cer file) on your local machine. Also replace the 'DummyPassword' with the password of the certificate
+
+    *   Check the connection is good using:
+    Get-PnPConnection 
+![source_dataset_info](https://github.com/OlaOlagunju/GCP_Mage_Data_Pipeline/blob/main/8.%20Images/source_dataset_info.png)
+
+
+    *   You can also check that you can access the documents using this app in the Site you specified:
+    Get-PnPListItem -List "Documents"
+![source_dataset_info](https://github.com/OlaOlagunju/GCP_Mage_Data_Pipeline/blob/main/8.%20Images/source_dataset_info.png)
+
+    
+   
 ## Step 2: Configure Azure Blob Storage Access
 
 1.  **Identify Blob Details:** Note your storage account URL, container name, and blob name.
