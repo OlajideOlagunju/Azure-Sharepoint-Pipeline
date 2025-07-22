@@ -5,7 +5,7 @@ An end-to-end data pipeline solution to securely and automatically ingest data f
 <br>
 
 # Business Case
-The client's central application, REVaRS, requires regular data feeds from various external sources, including automated exports from SAP that are deposited into a SharePoint site. The key challenge is to create a single, automated pipeline that can securely access data from multiple, isolated tenant environments without hardcoding credentials or granting overly broad permissions. The solution must be auditable, reliable, and scalable to onboard new data sources with minimal friction.
+Our application, requires regular data feeds from various external sources, including automated exports from SAP that are deposited into a SharePoint site. The key challenge is to create a single, automated pipeline that can securely access data from multiple, isolated tenant environments without hardcoding credentials or granting overly broad permissions. The solution must be auditable, reliable, and scalable to onboard new data sources with minimal friction.
 
 <br>
 
